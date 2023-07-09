@@ -2,7 +2,7 @@
 
 ## This python code was packaged using setup.py method
 
-### directory structure:
+### initial directory structure:
 
 ├── packaged_with_setuptools
 │    ├── clean_folder

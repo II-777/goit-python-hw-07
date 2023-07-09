@@ -15,7 +15,7 @@ EXT_BY_TYPE = {
     'pictures': ('JPG', 'JPEG', 'PNG', 'GIF', 'BMP', 'SVG', 'WEBP', 'TIF', 'TIFF', 'ICO'),
     'documents': ('DOC', 'DOCX', 'PDF', 'RTF', 'ODT', 'ODS', 'ODP', 'PPT', 'PPTX', 'XLS', 'XLSX', 'CSV', 'XML', 'HTML', 'HTM', 'TEX'),
     'music': ('MP3', 'WAV', 'WMA', 'OGG', 'FLAC', 'AAC', 'AMR', 'M4A', 'M3U', 'MID'),
-    'archives':  ('ZIP', '7Z', 'TAR', 'GZ', 'BZ2', 'XZ', 'TGZ', 'TBZ2'),
+    'archives':  ('ZIP', 'TAR', 'RAR', '7Z', 'GZ', 'XZ', 'TGZ', 'BZ2', 'TBZ2'),
     'notes': ('', 'MD', 'TXT'),
     'iso-img': ('ISO', 'IMG'),
 }
@@ -42,11 +42,10 @@ RUNTIME_DATA = {
     'time_finished': ''
 }
 
-def create_log() -> None:
+def create_log(TARGET_DIR: Path) -> None:
     '''Create a log file with the current timestamp and target directory information.'''
     with LOG_FILE_PATH.open('w') as log:
         log.write(f"{get_time()}\nSorting files in: {TARGET_DIR}\n")
-        log.write(f"#------------------------\n")
     if not LOG_FILE_PATH.exists():
         print(f'[-] Error. Failed to create sort.log at "{LOG_FILE_PATH}"')
 
@@ -105,8 +104,6 @@ def extension_sort(files: list) -> None:
     files_found_by_type = RUNTIME_DATA["files_found_by_type"]
     for file in files:
         if file.parts[1] in categories:
-            #file.parts[0]) -> testfolder/
-            #file.parts[1]) -> destination dir (music, videos, pictures etc.)
             continue
         ext = file.suffix.lstrip(".").upper()
         is_found = False
@@ -140,39 +137,39 @@ def move_files(TARGET_DIR: Path ) -> None:
                 new_file_path = rename_duplicates(new_file_path)
                 file.rename(new_file_path)
                 with open(LOG_FILE_PATH, "a") as log:
+                   log.write(f"#-Rename------------------\n")
                    log.write(f"Original: {original_path}\n")
                    log.write(f"Renamed : {new_file_path}\n")
-                   log.write(f"#------------------------\n")
             except Exception as e:
                 print(f'[-] Error: Failed to move "{new_file_path}": {e}')
 
 def handle_archives(archives_dir: Path) -> None:
-    '''Handle the extraction of files within archives directory.'''
+    '''Handle the extraction of files within the archives directory.'''
     unpacked_count = 0
-    if not Path(TARGET_DIR.joinpath("archives")).exists():
-     print('[!] no archives found')
-     return '[!] no archives found'
+
+    if not archives_dir.exists():
+        with open(LOG_FILE_PATH, "a") as log:
+            log.write(f"#-Extraction--------------\n")
+            log.write('[!] No archives found')
 
     for file in archives_dir.iterdir():
-        if file.is_file():
-            archive_name = file.stem
-            extraction_destination = archives_dir.joinpath(archive_name)
-            if not extraction_destination.exists():
+        archive_name = file.stem
+        extraction_destination = Path(archives_dir).joinpath(archive_name)
+        if not extraction_destination.exists():
                 extraction_destination.mkdir()
-            try:
-                shutil.unpack_archive(str(file), str(extraction_destination))
-                file.unlink()
-                unpacked_count += 1
-                with open(LOG_FILE_PATH, "a") as log:
-                    log.write(f"Archive Unpacked: {file.name} -> {extraction_destination}\n")
-                    log.write(f"#------------------------\n")
-            except Exception as e:
-                with open(LOG_FILE_PATH, "a") as log:
-                    log.write(f'[!] Warning: Failed to unpack "{file.name}": {e}\n')
-                    log.write(f"#------------------------\n")
-                print('[!] Warning: Failed to unpack an archive')
-                return '[!] Warning: Failed to unpack an archive'
-            RUNTIME_DATA['total_archives_unpacked'] = unpacked_count
+                try:
+                    shutil.unpack_archive(str(file), str(extraction_destination))
+                    file.unlink()
+                    unpacked_count += 1
+                    with LOG_FILE_PATH.open('a') as log:
+                        log.write(f'#-Extraction--------------\n')
+                        log.write(f'Archive Unpacked: {file.name} -> {extraction_destination}\n')
+                except Exception as e:
+                    with LOG_FILE_PATH.open('a') as log:
+                        log.write(f'#-Extraction--------------\n')
+                        log.write(f'[!] Warning: Failed to unpack "{file.name}": {e}\n')
+
+    RUNTIME_DATA['total_archives_unpacked'] = unpacked_count
 
 def purge_empty(source_TARGET_DIR: TARGET_DIR) -> None:
     '''Remove empty directories in the target directory.'''
@@ -198,6 +195,7 @@ def get_time() -> str:
 def process_stats() -> None:
     '''Log and display useful runtime stats.'''
     with LOG_FILE_PATH.open('a') as log:
+        log.write(f"#-STATS-------------------\n")
         log.write(f"Files count       -> {RUNTIME_DATA['total_files_found']}\n")
         log.write(f"Dirs sorted       -> {RUNTIME_DATA['total_directories_removed']}\n")
         log.write(f"Unpacked archives -> {RUNTIME_DATA['total_archives_unpacked']}\n")
@@ -209,17 +207,6 @@ def process_stats() -> None:
     print(f"Unpacked archives -> {RUNTIME_DATA['total_archives_unpacked']}\n")
     print(f"Started           -> {RUNTIME_DATA['time_started']}")
     print(f"Finished          -> {RUNTIME_DATA['time_finished']}")
-    print("[+] Success: All operations completed!")
-
-def initial_checks() -> str:
-    parser = argparse.ArgumentParser(description='Sort files in a directory.')
-    parser.add_argument('TARGET_DIR', type=str, help='Target directory to sort')
-    args = parser.parse_args()
-    target_dir = args.TARGET_DIR
-    if not Path(target_dir).exists():
-        print(f'[-] Error. TARGET_DIR does not exist: "{target_dir}"')
-        exit(1)
-    return TARGET_DIR
 
 def initial_checks() -> str:
     '''Entry point of the program. Contains pre-execution checks for validity of the input.'''
@@ -240,12 +227,12 @@ def main():
     TARGET_DIR = initial_checks()
     RUNTIME_DATA["time_started"] = get_time()
     LOG_FILE_PATH = Path(TARGET_DIR).joinpath(LOG_FILE_NAME)
-    create_log()
+    create_log(TARGET_DIR)
     file_scan(TARGET_DIR)
     dir_scan(TARGET_DIR)
     extension_sort(RUNTIME_DATA["files_found"])
-    #print(RUNTIME_DATA["files_found"])
     move_files(Path(TARGET_DIR))
+    handle_archives(Path(TARGET_DIR).joinpath('archives'))
     purge_empty(Path(TARGET_DIR))
     RUNTIME_DATA["time_finished"] = get_time()
     process_stats()

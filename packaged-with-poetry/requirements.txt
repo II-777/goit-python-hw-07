@@ -1,4 +1,0 @@
-DateTime==5.1
-pathlib==1.0.1
-pytz==2023.3
-zope.interface==6.0

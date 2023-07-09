@@ -2,16 +2,13 @@
 
 ## This python code was packaged using setup.py method
 
-### directory structure:
+### initial directory structure:
 
 ├── packaged_with_poetry
 │   ├── __init__.py
 │   └── sort.py
 ├── README.md
-├── pyproject.toml
-├── requirements.txt
-├── setup.cfg
-#└── test_pr.py
+└── pyproject.toml
 
 ### to create a package, from the diredctory where setup.py is located, run:
 poetry build
