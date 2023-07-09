@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "clean-folder"
+version = "1.0.0"
+description = "File sorting command line utility"
+authors = ["II-777"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "clean_folder"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pathlib = "^1.0.1"
+DateTime = "^5.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+includes = ["README.md"]
+
+[tool.poetry.scripts]
+clean-folder = "clean_folder.sort:main"
