@@ -1,9 +1,10 @@
 # goit-python-hw-07
 
-## This python code was packaged using setup.py method
+## This python code was packaged using setuptools
 
 ### initial directory structure:
 
+```
 ├── packaged_with_setuptools
 │    ├── clean_folder
 │    │   ├── __init__.py
@@ -11,7 +12,7 @@
 │    ├── MANIFEST.in
 │    ├── README.md
 │    └── setup.py
-
+```
 
 ### to create a package, from the diredctory where setup.py is located, run:
 python3 -m build
