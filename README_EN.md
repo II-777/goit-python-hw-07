@@ -3,13 +3,13 @@
 ## Task
 
 In this homework we will make a Python package and a console script that can be called anywhere in the system from the console with the clean-folder command. For this you need to create a structure of files and folders:
-
+```
 ├───clean_folder
 │ ├── clean_folder
 │ │ ├── clean.py
 │ │ └── __init__.py
 │ └── setup.py
-
+```
 In clean_folder/clean_folder/clean.py you need to put everything we did in the previous homework on folder parsing. Your main task is to write clean_folder/setup.py so that the built-in Python toolkit can install this package and the operating system can use this package as a console command.
 
 ## The Evaluation Criteria
