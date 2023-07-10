@@ -17,4 +17,4 @@ poetry build
 pip install .
 
 ### now the utility can be run from CLI, as so:
-clean-folder
+clean-folder testfolder/
